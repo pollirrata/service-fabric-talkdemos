@@ -102,20 +102,23 @@ $(document).ready(function(){
     var spiders = [];
 
     statusInterval = setInterval(function(){
-        $.post(svcpath + gameId, {status: JSON.stringify(
-                {
-                    spiders: spiders,
-                    score: score,
-                    killed: killed,
-                    level: level,
-                }
-            )
-        }).done(function(){
-            log("Game status saved");
-        }).fail(function(e){
-            log("Save game status failed");
-        });
-    }, 1000)
+        if(gamestatus == PLAYING){
+            $.post(svcpath + gameId, {status: JSON.stringify(
+                    {
+                        spiders: spiders,
+                        score: score,
+                        killed: killed,
+                        level: level,
+                    }
+                )
+            }).done(function(){
+                log("Game status saved");
+            }).fail(function(e){
+                log("Save game status failed");
+            });
+        }
+    }, 1000);
+
 
     var canvas = document.getElementById("canvas");
     var context = canvas.getContext("2d");
