@@ -54,7 +54,7 @@ $(document).ready(function(){
     //img sources
     ship.src = "img/shipsm.png";
     spiderimg.src = "img/spider-blue.png";
-    space.src = "img/galaxy.tga";
+    space.src = "img/galaxy.png";
     fire.src = "img/fire.png";
     explosionimg.src = "img/explosion.png";
         
@@ -63,6 +63,8 @@ $(document).ready(function(){
     boomsound.src = "fx/boom.wav";
     boomsound.volume = .5; 
 
+    //loaded flags
+    var spaceloaded = false;
 
     const INIT = 10;
     const PLAYING = 30;
@@ -72,7 +74,7 @@ $(document).ready(function(){
     var gamestatus = INIT;
     
     var log = function(msg){
-        $("#log").append(new Date() + msg + "</br>")
+        $("#log").prepend(new Date() + msg + "</br>")
     }
 
     //check if ID exists
@@ -141,12 +143,13 @@ $(document).ready(function(){
 
     space.onload = function(){
         context.drawImage(space, 0, 0);
+        spaceloaded = true;
     }
 
     var drawScreen = function(fire, fw, fh, fs){
         setInterval(function(){
 
-            context.drawImage(space, 0, 0);
+            if(spaceloaded) context.drawImage(space, 0, 0);
 
             switch(gamestatus){
                 case INIT:
@@ -347,12 +350,16 @@ $(document).ready(function(){
     levelStart(level);
 
     var getGameId = function(){
+		log("getting game id")
         $.ajax({
             url: svcpath,
             type: 'PUT'
         }).done(function(id){
+			log("Game ID " + id);
             window.location.search = '?id=' + id;
-        });  
+        }).fail(function(e){
+			log(e);
+		});  
     }
 
     //controls
