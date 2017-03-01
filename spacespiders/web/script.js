@@ -1,6 +1,25 @@
 "use strict";
 $(document).ready(function(){
 
+$(document).ajaxError(function(event, jqxhr, settings, thrownError){
+    //console.log(jqxhr);
+    noty({
+        text        : jqxhr.status + ' ' + jqxhr.statusText,
+        type        : 'error',
+        timeout     : 700,
+        dismissQueue: true,
+        closeWith: ['click'],
+        layout      : 'topLeft',
+        theme       : 'relax',
+        animation: {
+            open: {height: 'toggle'},
+            close: {height: 'toggle'},
+            easing: 'swing',
+            speed: 500
+        }
+    });
+});
+
 //positions
     var shipx = 400;
     var shipy = 430;
@@ -27,8 +46,8 @@ $(document).ready(function(){
     const killedlby = scoreboxy + 42;
     const leftlby = scoreboxy + 62;
 
-	const svcpath = "http://localhost:52606/api/"
 	//const svcpath = "http://localhost:52606/api/"
+	const svcpath = "http://spacespiderssvc01.azurewebsites.net/api/"
     const statusSvc = svcpath + "GameStatus/";
 	const colorConfigSvc = svcpath + "ColorConfig/"
 	const scoreConfigSvc = svcpath + "ScoreConfig/"
@@ -98,6 +117,8 @@ $(document).ready(function(){
     if(values[1]){
         gameId = values[1];
         gamestatus = LOADGAME;
+        $("#gameid").text(gameId);
+
         log("Searching form game on server");
         $.ajax({
             url: statusSvc + gameId,
@@ -138,7 +159,9 @@ $(document).ready(function(){
 				enemyvalue = r.hitScore;
 				missvalue = r.missScore;
 
-			});
+			}).fail(function(){
+
+            });
 			
 
 			
@@ -404,13 +427,13 @@ $(document).ready(function(){
 			log("Game ID " + id);
             window.location.search = '?id=' + id;
         }).fail(function(e){
-			log(e);
+			//console.log(e);
 		});  
     }
 
     //controls
     $(window).keydown(function(e){
-        console.log(e.which);
+        //console.log(e.which);
         var key = e.which;
         
         switch(gamestatus){
