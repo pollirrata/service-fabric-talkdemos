@@ -1,3 +1,4 @@
+"use strict";
 $(document).ready(function(){
 
 //positions
@@ -26,7 +27,11 @@ $(document).ready(function(){
     const killedlby = scoreboxy + 42;
     const leftlby = scoreboxy + 62;
 
-    const svcpath = "http://spacespiderssvc01.azurewebsites.net/api/GameStatus/";
+	const svcpath = "http://localhost:52606/api/"
+	//const svcpath = "http://localhost:52606/api/"
+    const statusSvc = svcpath + "GameStatus/";
+	const colorConfigSvc = svcpath + "ColorConfig/"
+	const scoreConfigSvc = svcpath + "ScoreConfig/"
 
     //refresh rates
     const explosionrr = 25;
@@ -35,14 +40,16 @@ $(document).ready(function(){
 
     //scoring
     var score = 0;
-    const enemyvalue = 100;
-    const missvalue = 50;
+    var enemyvalue = 100;
+    var missvalue = 50;
     var killed = 0;
     var level = 0;
 
+	//intervals
     var leftInterval;
     var rightInterval;
     var statusInterval;
+	var configInterval;
 
     //images
     var space = new Image();
@@ -57,6 +64,9 @@ $(document).ready(function(){
     space.src = "img/galaxy.png";
     fire.src = "img/fire.png";
     explosionimg.src = "img/explosion.png";
+	
+	//colors
+	var beamColor = "red";
         
     //fx
     var boomsound = new Audio();
@@ -77,6 +87,9 @@ $(document).ready(function(){
         $("#log").prepend(new Date() + msg + "</br>")
     }
 
+	var spiders = [];
+
+	
     //check if ID exists
     var query = window.location.search.substring(1);
     var values = query.split("=");
@@ -84,39 +97,72 @@ $(document).ready(function(){
 
     if(values[1]){
         gameId = values[1];
-        //alert(values[1]);
         gamestatus = LOADGAME;
         log("Searching form game on server");
         $.ajax({
-            url: svcpath + gameId,
+            url: statusSvc + gameId,
             type: 'GET'
         }).done(function(status){
             if(status){
-
+				log(status);
+				var savedStatus = JSON.parse(status);
+				score = savedStatus.score;
+				level = savedStatus.level;
+				killed = savedStatus.killed;
+				spiders = [];
+				for(var svspider in savedStatus.spiders){
+					//console.log(savedStatus.spiders[svspider].x);
+					spiders.push(new Spider(savedStatus.spiders[svspider].x,savedStatus.spiders[svspider].y));
+				}
             }else{
-                log("No game found, starting new one");
-                gamestatus = PLAYING;
-            }
-        });  
+				levelStart(level);
+			}
+			gamestatus = PLAYING;
+        }).fail(function(){
+			log("No game found, starting new one");
+			gamestatus = GETID;
+			getGameId();
+		});  
     }
 
+	var configInterval = setInterval(function(){
+		if(gamestatus == PLAYING){
+			$.get(colorConfigSvc)
+			.done(function(r){ 
+				spiderimg.src = "img/spider-" + r.spiderColor + ".png";
+				beamColor = r.beamColor;
+			});
+			
+			$.get(scoreConfigSvc)
+			.done(function(r){ 
+				enemyvalue = r.hitScore;
+				missvalue = r.missScore;
 
-    var spiders = [];
+			});
+			
+
+			
+		}
+	}, 1000);
+
 
     statusInterval = setInterval(function(){
         if(gamestatus == PLAYING){
-            $.post(svcpath + gameId, {status: JSON.stringify(
+			$.ajax({
+			  type: "POST",
+			  url: statusSvc + gameId,
+			  data: {"": JSON.stringify(
                     {
                         spiders: spiders,
                         score: score,
                         killed: killed,
                         level: level,
-                    }
-                )
-            }).done(function(){
-                log("Game status saved");
+					})},
+			}
+            ).done(function(){
+                //log("Game status saved");
             }).fail(function(e){
-                log("Save game status failed");
+                log("Save game status failed " + e);
             });
         }
     }, 1000);
@@ -237,6 +283,7 @@ $(document).ready(function(){
     }                
 
     var levelStart = function(newlevel){
+		log("Starting level " + newlevel);
         if(newlevel > 2){
             canvas.height += spiderh;
             shipy += spiderh;
@@ -244,7 +291,7 @@ $(document).ready(function(){
         setTimeout(function(){
             for(var i = 0; i <= newlevel; i++){
                 for(var spidercnt = 0; spidercnt < enemyrowcnt; spidercnt ++){
-                spiders.push(new Spider(enemyx + spidercnt * spiderw,enemyy + spiderh * i));
+					spiders.push(new Spider(enemyx + spidercnt * spiderw,enemyy + spiderh * i));
                 }
             }
         },500);
@@ -265,7 +312,7 @@ $(document).ready(function(){
             beamsound.volume = .5;
             beamsound.play();    */
             interval = setInterval(function(){
-                drawLine("red", 5, self.x, self.y +  beamstep, self.x, self.y);
+                drawLine(beamColor, 5, self.x, self.y +  beamstep, self.x, self.y);
                 var hit = self.hitTest();
                 
                 if(self.y < 0 ){
@@ -315,6 +362,7 @@ $(document).ready(function(){
         this.shift = 5;
         var direction = 1; 
         this.draw = function(){
+			//log("Drawing spider " + self.x + "," + self.y);
             if(this.step >  9){
                 this.step = 0;
             }
@@ -325,7 +373,7 @@ $(document).ready(function(){
             spiders.splice(i, 1);
             explosion.draw();     
             updateHitScore(this.x, this.y);                   
-        }
+        }		
     }
 
 
@@ -346,13 +394,11 @@ $(document).ready(function(){
 
     }
     
-    //gamestart
-    levelStart(level);
 
     var getGameId = function(){
 		log("getting game id")
         $.ajax({
-            url: svcpath,
+            url: statusSvc,
             type: 'PUT'
         }).done(function(id){
 			log("Game ID " + id);
@@ -407,7 +453,8 @@ $(document).ready(function(){
                 //shoot
                 if(key==32){
                     var b = new Beam();
-                    b.shoot();                    
+                    b.shoot();      
+					e.preventDefault();
                 }
                 break;
         }

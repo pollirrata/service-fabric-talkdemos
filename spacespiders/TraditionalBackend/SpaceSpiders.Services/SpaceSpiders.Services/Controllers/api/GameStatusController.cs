@@ -3,15 +3,19 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using System.Web.Http.Cors;
 
 namespace SpaceSpiders.Services.Controllers.Api
 {
+    [EnableCors(origins: "*", headers: "*", methods:"*")]
     public class GameStatusController : ApiController
     {
         private static readonly Dictionary<string, string> _games = new Dictionary<string, string>();
 
         public string Get(string id)
         {
+            if (!_games.ContainsKey(id)) throw new HttpResponseException(HttpStatusCode.NotFound);
+
             string game = string.Empty;
             _games.TryGetValue(id, out game);
 
