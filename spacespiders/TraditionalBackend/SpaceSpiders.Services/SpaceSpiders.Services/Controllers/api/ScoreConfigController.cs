@@ -1,34 +1,33 @@
 ﻿using System.Web.Http;
 using System.Web.Http.Cors;
+using Microsoft.WindowsAzure.Storage.Table;
 
-namespace SpaceHitScores.Services.Controllers.api
+namespace SpaceSpiders.Services.Controllers.api
 {
     [EnableCors(origins: "*", headers: "*", methods: "*")]
-    public class ScoreConfigController : ApiController
+    public class ScoreConfigController : BaseApiController
     {
-        private static int _hitScore = 100;
-        private static int _missScore = 50;
-
         public object Get()
         {
-            return new { hitScore = 100, missScore = 50 };
+            TableOperation operation = TableOperation.Retrieve<ScoreConfig>("config", "score");
+            ScoreConfig score = _table.Execute(operation).Result as ScoreConfig;
+            return new { hitScore = score.HitScore, missScore = score.MissScore };
         }
 
-        public void Post([FromBody]ScoreConfig colors)
+        public void Post([FromBody]ScoreConfig score)
         {
-            if (colors.HitScore.HasValue)
-            {
-                _hitScore = colors.HitScore.Value;
-            }
-            if (colors.MissScore.HasValue)
-            {
-                _missScore = colors.MissScore.Value;
-            }
+            TableOperation operation = TableOperation.InsertOrMerge(score);
+            _table.Execute(operation);
         }
     }
 
-    public class ScoreConfig
+    public class ScoreConfig:TableEntity
     {
+        public ScoreConfig()
+        {
+            this.PartitionKey = "config";
+            this.RowKey = "score";
+        }
         public int? HitScore { get; set; }
         public int? MissScore { get; set; }
     }

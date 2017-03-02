@@ -1,35 +1,33 @@
 ﻿using System.Web.Http;
 using System.Web.Http.Cors;
-using Microsoft.Ajax.Utilities;
+using Microsoft.WindowsAzure.Storage.Table;
 
 namespace SpaceSpiders.Services.Controllers.api
 {
     [EnableCors(origins: "*", headers: "*", methods: "*")]
-    public class ColorConfigController : ApiController
+    public class ColorConfigController : BaseApiController
     {
-        private static string _spiderColor = "blue";
-        private static string _beamColor = "red";
-
         public object Get()
         {
-            return new {spiderColor = _spiderColor, beamColor = _beamColor};
+            TableOperation operation = TableOperation.Retrieve<ColorConfig>("config", "color");
+            ColorConfig colors = _table.Execute(operation).Result as ColorConfig;
+            return new {spiderColor = colors.Spider, beamColor = colors.Beam};
         }
 
         public void Post([FromBody]ColorConfig colors )
         {
-            if (!colors.Spider.IsNullOrWhiteSpace())
-            {
-                _spiderColor = colors.Spider;
-            }
-            if (!colors.Beam.IsNullOrWhiteSpace())
-            {
-                _beamColor = colors.Beam;
-            }
+            TableOperation operation = TableOperation.InsertOrMerge(colors);
+            _table.Execute(operation);  
         }
     }
 
-    public class ColorConfig
+    public class ColorConfig: TableEntity
     {
+        public ColorConfig()
+        {
+            this.PartitionKey = "config";
+            this.RowKey = "color";
+        }
         public string Spider { get; set; }
         public string Beam { get; set; }
     }
