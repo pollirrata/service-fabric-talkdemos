@@ -1,48 +1,71 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Cors;
+using Microsoft.WindowsAzure.Storage.Table;
+using SpaceSpiders.Services.Controllers.api;
 
 namespace SpaceSpiders.Services.Controllers.Api
 {
     [EnableCors(origins: "*", headers: "*", methods:"*")]
-    public class GameStatusController : ApiController
+    public class GameStatusController : BaseApiController
     {
-        private static readonly Dictionary<string, string> _games = new Dictionary<string, string>();
-
         public string Get(string id)
         {
-            if (!_games.ContainsKey(id)) throw new HttpResponseException(HttpStatusCode.NotFound);
 
-            string game = string.Empty;
-            _games.TryGetValue(id, out game);
+            TableOperation operation = TableOperation.Retrieve<GameStatus>("status", id);
+            GameStatus currentStatus = _table.Execute(operation).Result as GameStatus;
 
-            return game;
+            if (currentStatus == null) throw new HttpResponseException(HttpStatusCode.NotFound);
+
+            return currentStatus.Status;
         }
 
         public HttpResponseMessage Post(string id, [FromBody] string status)
         {
-            if (!_games.ContainsKey(id)) return new HttpResponseMessage(HttpStatusCode.NotFound);
+            //if (!_games.ContainsKey(id)) return new HttpResponseMessage(HttpStatusCode.NotFound);
 
-            _games[id] = status;
+            TableOperation operation = TableOperation.Retrieve<GameStatus>("status", id);
+            GameStatus currentStatus = _table.Execute(operation).Result as GameStatus;
+
+            if(currentStatus == null) return new HttpResponseMessage(HttpStatusCode.NotFound);
+
+            currentStatus.Status = status;
+            operation = TableOperation.InsertOrMerge(currentStatus);
+            _table.Execute(operation);
+
             return new HttpResponseMessage(HttpStatusCode.OK);
         }
 
         public string Put([FromBody]string status)
         {
             string id = Guid.NewGuid().ToString();
-            _games.Add(id, string.Empty);
+            TableOperation operation = TableOperation.Insert(new GameStatus() {RowKey = id, Status = status});
+            _table.Execute(operation);
+
             return id;
         }
 
         public HttpResponseMessage Delete(string id)
         {
-            if (!_games.ContainsKey(id)) return new HttpResponseMessage(HttpStatusCode.NotFound);
+            TableOperation operation = TableOperation.Retrieve<GameStatus>("status", id);
+            GameStatus currentStatus = _table.Execute(operation).Result as GameStatus;
 
-            _games.Remove(id);
+            if (currentStatus == null) return new HttpResponseMessage(HttpStatusCode.NotFound);
+
+            operation = TableOperation.Delete(currentStatus);
+            _table.Execute(operation);
             return new HttpResponseMessage(HttpStatusCode.OK);
         }
+    }
+
+    public class GameStatus : TableEntity
+    {
+        public GameStatus()
+        {
+            this.PartitionKey = "status";
+        }
+        public string Status { get; set; }
     }
 }
