@@ -30,6 +30,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Traditional", "Traditional"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ServiceFabric", "ServiceFabric", "{C800412A-37B0-448A-9994-84A4FB68DB4B}"
 EndProject
+Project("{A07B5EB6-E848-4116-A8D0-A826331D98C6}") = "SpaceSpiders.SFabric", "..\..\ServiceFabric\SpaceSpiders.SFabric\SpaceSpiders.SFabric.sfproj", "{2E510330-0F99-4E23-885A-F618FF01A089}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpaceSpidersStatelessSvc", "..\..\ServiceFabric\SpaceSpidersStatelessSvc\SpaceSpidersStatelessSvc.csproj", "{6323367E-5786-4AD4-A737-E2CCB873FB41}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -54,11 +58,27 @@ Global
 		{2799074B-7AED-4B1E-B82C-BC78E9A2E06D}.Release|Any CPU.Build.0 = Debug|Any CPU
 		{2799074B-7AED-4B1E-B82C-BC78E9A2E06D}.Release|x64.ActiveCfg = Debug|Any CPU
 		{2799074B-7AED-4B1E-B82C-BC78E9A2E06D}.Release|x64.Build.0 = Debug|Any CPU
+		{2E510330-0F99-4E23-885A-F618FF01A089}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{2E510330-0F99-4E23-885A-F618FF01A089}.Debug|x64.ActiveCfg = Debug|x64
+		{2E510330-0F99-4E23-885A-F618FF01A089}.Debug|x64.Build.0 = Debug|x64
+		{2E510330-0F99-4E23-885A-F618FF01A089}.Debug|x64.Deploy.0 = Debug|x64
+		{2E510330-0F99-4E23-885A-F618FF01A089}.Release|Any CPU.ActiveCfg = Release|x64
+		{2E510330-0F99-4E23-885A-F618FF01A089}.Release|x64.ActiveCfg = Release|x64
+		{2E510330-0F99-4E23-885A-F618FF01A089}.Release|x64.Build.0 = Release|x64
+		{2E510330-0F99-4E23-885A-F618FF01A089}.Release|x64.Deploy.0 = Release|x64
+		{6323367E-5786-4AD4-A737-E2CCB873FB41}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{6323367E-5786-4AD4-A737-E2CCB873FB41}.Debug|x64.ActiveCfg = Debug|x64
+		{6323367E-5786-4AD4-A737-E2CCB873FB41}.Debug|x64.Build.0 = Debug|x64
+		{6323367E-5786-4AD4-A737-E2CCB873FB41}.Release|Any CPU.ActiveCfg = Release|x64
+		{6323367E-5786-4AD4-A737-E2CCB873FB41}.Release|x64.ActiveCfg = Release|x64
+		{6323367E-5786-4AD4-A737-E2CCB873FB41}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{BC424986-F987-4DA2-A503-4D9CF1A180DD} = {9EC8EF1F-FC7D-4CE5-8F00-B192C14C289C}
+		{2E510330-0F99-4E23-885A-F618FF01A089} = {C800412A-37B0-448A-9994-84A4FB68DB4B}
+		{6323367E-5786-4AD4-A737-E2CCB873FB41} = {C800412A-37B0-448A-9994-84A4FB68DB4B}
 	EndGlobalSection
 EndGlobal
